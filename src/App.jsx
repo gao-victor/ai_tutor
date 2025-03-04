@@ -1,0 +1,37 @@
+import "./App.css";
+import { useState, useRef, createContext } from "react";
+import Audio from "./Audio";
+import { SharedProvider } from "./SharedContext";
+import Transcript from "./Transcript";
+import MathEquations from "./MathEquations";
+
+
+import {
+  Expression,
+  GraphingCalculator,
+  useHelperExpression,
+} from "desmos-react";
+import GraphingCalculatorComponent from "./GraphingCalculator";
+
+export default function App() {
+  const gcEquationInputRef = useRef(null);
+  const gcRef = useRef(null);
+  const [equations, setEquations] = useState([]);
+  const [equationCount, setEquationCount] = useState(0);
+
+  function addEquation(equation) {
+    setEquations([...equations, equation]);
+    setEquationCount(equationCount + 1);
+  }
+
+  return (
+    <>
+      <SharedProvider>
+        <Audio></Audio>
+        <Transcript></Transcript>
+        <MathEquations></MathEquations>
+        <GraphingCalculatorComponent></GraphingCalculatorComponent>
+      </SharedProvider>
+    </>
+  );
+}
