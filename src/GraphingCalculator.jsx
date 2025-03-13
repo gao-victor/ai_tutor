@@ -1,6 +1,6 @@
 import { useEffect, useRef, useContext, useState } from "react";
 import { SharedContext } from "./SharedContext";
-import "./index.css";
+import "./App2.css";
 import Groq from "groq-sdk";
 import {
   Expression,
@@ -11,7 +11,8 @@ import {
 export default function GraphingCalculatorComponent() {
   const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
   const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
-  const { transcript, setTranscript, stage, setStage, topic, setTopic } = useContext(SharedContext);
+  const { transcript, setTranscript, stage, setStage, topic, setTopic } =
+    useContext(SharedContext);
   const [currentGraphingEquation, setCurrentGraphingEquation] = useState(0);
   const [playEquations, setPlayEquations] = useState(false);
   const [graphingEquations, setGraphingEquations] = useState([]);
@@ -42,7 +43,7 @@ export default function GraphingCalculatorComponent() {
   }
 
   async function getGraphingEquations() {
-    if (!transcript.length) {
+    if (!transcript.length || stage == "Setup") {
       console.log("no transcript to retrieve graphing equations from");
       return;
     }
@@ -90,10 +91,6 @@ export default function GraphingCalculatorComponent() {
     }
   }
 
-  if (stage == "Setup"){
-    return;
-  }
-
   return (
     <>
       <GraphingCalculator
@@ -110,6 +107,7 @@ export default function GraphingCalculatorComponent() {
         )}
       </GraphingCalculator>
       <button
+        className="graphControlButton"
         onClick={() => {
           nextEquation();
         }}
@@ -117,6 +115,7 @@ export default function GraphingCalculatorComponent() {
         Next Equation
       </button>
       <button
+        className="graphControlButton"
         onClick={() => {
           setPlayEquations(!playEquations);
         }}

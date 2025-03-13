@@ -1,4 +1,4 @@
-import "./App.css";
+import "./App2.css";
 import { useState, useRef, createContext } from "react";
 import Audio from "./Audio";
 import { SharedProvider } from "./SharedContext";
@@ -25,13 +25,13 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="appContainer">
       <SharedProvider>
         <Audio></Audio>
-        <Transcript></Transcript>
         <MathEquations></MathEquations>
         <GraphingCalculatorComponent></GraphingCalculatorComponent>
+        <Transcript></Transcript>
       </SharedProvider>
-    </>
+    </div>
   );
 }

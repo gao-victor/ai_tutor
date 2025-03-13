@@ -1,11 +1,18 @@
-import React, { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { SharedContext } from "./SharedContext";
+import "./App2.css"
 
 export default function Transcript() {
   const { transcript, stage, validInput, setValidInput } = useContext(SharedContext);
+  const transcriptRef = useRef(null)
+  useEffect(() => {
+    if (transcriptRef.current){
+      transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+    }
+  }, [transcript])
+
   return (
-    <>
-      <div className="transcriptSection">
+      <div className="transcriptSection" ref={transcriptRef}>
         {!validInput && <p className="transcriptText" style={{color: "red"}}>Invalid input, please try again</p>}
         <ul>
           {transcript &&
@@ -17,6 +24,5 @@ export default function Transcript() {
             ))}
         </ul>
       </div>
-    </>
   );
 }

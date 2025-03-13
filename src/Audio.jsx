@@ -2,6 +2,7 @@ import React, { useState, useRef, useContext } from "react";
 import Groq from "groq-sdk";
 import OpenAI from "openai/index.mjs";
 import { SharedContext } from "./SharedContext";
+import "./App2.css"
 export default function Audio() {
   const levelOfUnderstandingMap = {
     Level1:
@@ -68,7 +69,7 @@ export default function Audio() {
     }
   }
 
-  function recordSwitch(state) {
+  function recordSwitchDisable(state) {
     switch (state) {
       case "off":
         recordAudioRef.current.setAttribute("disabled", true);
@@ -160,23 +161,29 @@ export default function Audio() {
     }
   }
 
-  async function summarizeTranscript(transcript, includePreviousSummary=true) {
+  async function summarizeTranscript(
+    transcript,
+    includePreviousSummary = true
+  ) {
     let messages = [];
     if (includePreviousSummary) {
+    } else {
+      messages.push({
+        role: "system",
+        content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should be concise, but include all key details about the conversation and the student's progress in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}`,
+      });
     }
-    else{
-      messages.push({role: "system", content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should be concise, but include all key details about the conversation and the student's progress in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}`});
-    }
-    messages.push({role: "user", content: JSON.stringify(transcript)});
-    try{
+    messages.push({ role: "user", content: JSON.stringify(transcript) });
+    try {
       const response = await groq.chat.completions.create({
         messages: messages,
         model: "llama3-8b-8192",
         response_format: { type: "json_object" },
       });
-      return JSON.parse(response.choices[0].message.content)["conversationNotes"];
-    }
-    catch(err){
+      return JSON.parse(response.choices[0].message.content)[
+        "conversationNotes"
+      ];
+    } catch (err) {
       console.error(err);
     }
   }
@@ -235,7 +242,7 @@ export default function Audio() {
       let additionalSystemPrompt = includePreviousLevel
         ? `Here is a framework for assessing a student's level of understanding of the topic: ${JSON.stringify(
             levelOfUnderstandingMap
-          )}. Previously you had said the student was at level ${level}. Use this framework to determine the student's current level of understanding.`
+          )}. Previously you had said the student was at level ${level}. Use this framework to determine the student's current level of understanding and return the level they are at.`
         : `Here is a framework for assessing a student's level of understanding of the topic: ${JSON.stringify(
             levelOfUnderstandingMap
           )}. Use this framework to determine the student's level of understanding and return the level they are at. `;
@@ -344,7 +351,7 @@ export default function Audio() {
       console.log("messages: " + JSON.stringify(messages));
       const response = await groq.chat.completions.create({
         messages: messages,
-        model: "llama3-8b-8192",
+        model: "llama-3.3-70b-versatile",
       });
       console.log("tutor said: " + response.choices[0].message.content);
       return response.choices[0].message.content;
@@ -355,7 +362,7 @@ export default function Audio() {
 
   async function learn() {
     if (intLevel(level) <= 4) {
-      if (transcript.length >= 3){
+      if (transcript.length >= 3) {
         const summary = await summarizeTranscript(transcript, false);
         console.log("summary: " + summary);
       }
@@ -408,7 +415,7 @@ export default function Audio() {
         " level: " +
         level
     );
-    recordSwitch("off");
+    recordSwitchDisable("off");
     switch (stage) {
       case "Setup":
         await setup();
@@ -420,20 +427,21 @@ export default function Audio() {
         await practice();
         break;
     }
-    recordSwitch("on");
+    recordSwitchDisable("on");
   }
 
   return (
-    <div>
+    <div className="topBar">
       <button
         ref={recordAudioRef}
         onClick={recording ? stopRecording : startRecording}
+        className={`recordAudioButton ${recording ? 'recording' : ''}`}
       >
-        {recording ? "Stop Recording" : "Start Recording"}
+        {recording ? "Stop" : "Start"}
       </button>
       {audioBlob && (
-        <button onClick={main} ref={sendAudioRef}>
-          Send to API
+        <button onClick={main} ref={sendAudioRef} className="sendAudioButton">
+          Tutor Me!
         </button>
       )}
       <audio ref={audioPlayerRef} hidden={!audioURL} />

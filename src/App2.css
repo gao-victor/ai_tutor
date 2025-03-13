@@ -1,0 +1,192 @@
+/* Example: import a modern font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+/* Global resets / base styling */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #e9ecef; /* a light gray background */
+}
+
+button:disabled{
+  opacity: .5;
+  cursor: not-allowed;
+  background-color: grey;
+}
+
+/* 
+  Center the entire app in a narrower container. 
+  Give it some padding, a white background, and a subtle shadow.
+*/
+.appContainer {
+  max-width: 1000px;  /* controls the width; adjust as desired */
+  margin: 40px auto;  /* centers horizontally with top/bottom spacing */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* if you need to hide any overflow */
+}
+
+/* 
+  Top bar for Audio controls, placed inside .appContainer at the top.
+  You can reorder your components in App.jsx so that <Audio /> is first 
+  and wrapped in this container. 
+*/
+.topBar {
+  display: flex;
+  justify-content: center; /* center the buttons horizontally */
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 
+  Record audio button:
+  - Circular button with an icon in the middle.
+  - We’ll simulate the mic icon with a background image or inline SVG.
+  - The entire button glows green by default, red when recording.
+*/
+.recordAudioButton {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background-color: #43bc47; /* green when idle */
+  cursor: pointer;
+  color: white;
+  /* If Audio.jpg is in public/, use url("/Audio.jpg") */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 30px 30px;
+  /* Subtle green glow */
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  transition: background-color 0.2s ease;
+}
+
+/* Turn button red + red glow when recording */
+.recordAudioButton.recording {
+  background-color: #f44336; /* red */
+  box-shadow: 0 0 10px rgba(244, 67, 54, 0.6);
+}
+
+.recordAudioButton:hover{
+  background-color: #3b7e3d;
+}
+
+.recordAudioButton.recording:hover{
+  background-color: #cf4137;
+}
+/* 
+  "Tutor me!" (send audio) button 
+  - Slightly larger than standard text, with consistent styling
+*/
+.sendAudioButton {
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.sendAudioButton:hover {
+  background-color: #145ca4;
+}
+
+/* --- MATH EQUATIONS SECTION (chalkboard) --- */
+.equationsSection {
+  /* Keep some vertical height, but you can tweak as needed */
+  height: 200px; 
+  background-color: #324d2a; /* dark green chalkboard color */
+  color: #ffffff;
+  border: 10px solid #8b5a2b; /* wood-like border */
+  overflow-y: auto; /* scrollable for many equations */
+  padding: 20px;
+  /* If you want a chalkboard style font, import it or use your own. 
+     For example, in addition to Open Sans, you could do: 
+     @import url('https://fonts.googleapis.com/css2?family=Schoolbell&display=swap'); 
+     Then set font-family: 'Schoolbell', cursive; 
+  */
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.1rem;
+}
+
+/* 
+  For each equation block 
+  (You might also want to ensure KaTeX text is a bit larger or whiter).
+*/
+.equationsSection .katex {
+  color: #fff; 
+}
+
+/* --- GRAPHING CALCULATOR SECTION --- */
+.calculator {
+  /* Provide a set height or allow it to expand. 
+     We can keep some margin or padding for spacing. */
+  margin: 20px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  height: 400px; /* example height, adjust as needed */
+  position: relative;
+}
+
+.calculator .dcg-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Style the Graphing Calculator control buttons */
+.graphControlButton {
+  padding: 8px 16px;
+  margin-right: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.graphControlButton:hover {
+  background-color: #145ca4;
+}
+
+/* --- TRANSCRIPT SECTION --- */
+.transcriptSection {
+  /* Center the transcript container itself */
+  margin: 0 auto; 
+  width: 90%; /* or another narrower width inside the .appContainer */
+  min-height: 150px;
+  max-height: 250px; /* if you want a fixed max height */
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+
+/* You can center the text if you prefer, 
+   but often transcripts look better left-aligned. 
+   If you truly want centered text, uncomment:
+   text-align: center; 
+*/
+.transcriptText {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Example error styling */
+.transcriptText.error {
+  color: red;
+  font-weight: bold;
+}
