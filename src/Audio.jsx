@@ -2,17 +2,17 @@ import React, { useState, useRef, useContext } from "react";
 import Groq from "groq-sdk";
 import OpenAI from "openai/index.mjs";
 import { SharedContext } from "./SharedContext";
-import "./App2.css"
+import "./App2.css";
 export default function Audio() {
   const levelOfUnderstandingMap = {
     Level1:
       "The student has not demonstrated any understanding of the topic at hand.",
     Level2:
-      "The student has demonstrated an intutuitive understanding of the topic, but does not seeem to understand the mathemtaical notation.",
+      "The student has demonstrated an intutuitive understanding of the topic, but does not seeem to understand the mathematical notation.",
     Level3:
       "The student has a demonstrated a well rounded understanding of the topic, both intuitively and mathematically. However the student has not demonstrated comfortability with variations and corollaries of it that they'd use to solve problems they'd encounter in class or on homeworks.",
     Level4:
-      "The student has demonstrated a welll rounded understanding of the topic and practical, relevant corollaries or variations. However the student has not demonstrated comfortability with applying the topic to solve homework or exam problems - possibly because they're unfamiliar with techniques, tricks, and strategies related to the topic.",
+      "The student has demonstrated a well rounded understanding of the topic and practical, relevant corollaries or variations. However the student has not demonstrated comfortability with applying the topic to solve homework or exam problems - possibly because they're unfamiliar with techniques, tricks, and strategies related to the topic.",
     Level5:
       "The student has a demonstrated very solid understanding of the topic - both of the topic itself and practical applications of the topic.",
   };
@@ -21,7 +21,7 @@ export default function Audio() {
     Level1:
       "You should explain the topic and answer their questions in a way that is intuitive and easy to understand. You should not be using much, if any, mathematical notation. The goal is for the student to understand what the topic they're asking about is and what it does.",
     Level2:
-      "You should explain the topic and answer their questions mathematicall. The goal is for the student to understand the mathematical notation of the topic they're asking about and be able to apply it to their intutive understanding.",
+      "You should explain the topic and answer their questions mathematically. The goal is for the student to understand the mathematical notation of the topic they're asking about and be able to apply it to their intutive understanding.",
     Level3:
       "You should explain the topic and answer their questions while trying to introduce to them relevant and practical corollaries or variations of the topic. Since the student has demonstrated an understanding of the topic at face value, the goal here is for the student to be comfortable with variations of it that they might see or use when solving problems.",
     Level4:
@@ -67,6 +67,15 @@ export default function Audio() {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  function formatTranscriptString(inputTranscript = transcript) {
+    let formattedTranscript = "";
+    inputTranscript.forEach((transcriptObj) => {
+      formattedTranscript += `Tutor: "${transcriptObj.tutor}.\n"`;
+      formattedTranscript += `Student: "${transcriptObj.student}.\n"`;
+    });
+    return formattedTranscript;
   }
 
   function recordSwitchDisable(state) {
@@ -237,7 +246,7 @@ export default function Audio() {
           ...newTranscript[newTranscript.length - 1],
           student: recentInput,
         };
-        inputText = JSON.stringify(newTranscript);
+        inputText = formatTranscriptString(newTranscript);
       }
       let additionalSystemPrompt = includePreviousLevel
         ? `Here is a framework for assessing a student's level of understanding of the topic: ${JSON.stringify(
@@ -287,7 +296,7 @@ export default function Audio() {
       const levelOfUnderstanding = await extractStudentLevel(
         transcribedText,
         false,
-        false
+        true
       );
       if (levelOfUnderstanding == "invalidInput") {
         console.log("Invalid input, need to try again");
@@ -435,7 +444,7 @@ export default function Audio() {
       <button
         ref={recordAudioRef}
         onClick={recording ? stopRecording : startRecording}
-        className={`recordAudioButton ${recording ? 'recording' : ''}`}
+        className={`recordAudioButton ${recording ? "recording" : ""}`}
       >
         {recording ? "Stop" : "Start"}
       </button>
