@@ -28,67 +28,59 @@ export default function Audio() {
     setValidInput,
   } = useContext(SharedContext);
   const { stage, setStage } = useContext(SharedContext);
-  const [level, setLevel, notes, setNotes] = useState("");
+  const [level, setLevel] = useState("");
+  const [notes, setNotes] = useState("");
+  const [inputTranscript, setInputTranscript] = useState([]);
 
   const levelOfUnderstandingMap = {
-    Level1:
-      `The student has not demonstrated any understanding of the ${
-        topic ? topic : "topic"
-      } at hand.`,
-    Level2:
-      `The student has demonstrated an intutuitive understanding of the ${
-        topic ? topic : "topic"
-      }, but does not seeem to understand the mathematical notation.`,
-    Level3:
-      `The student has a demonstrated a well rounded understanding of the ${
-        topic ? topic : "topic"
-      }, both intuitively and mathematically. However the student has not demonstrated comfortability with variations and corollaries of it that they'd use to solve problems they'd encounter in class or on homeworks.`,
-    Level4:
-      `The student has demonstrated a well rounded understanding of the ${
-        topic ? topic : "topic"
-      } and practical, relevant corollaries or variations. However the student has not demonstrated comfortability with applying the ${
-        topic ? topic : "topic"
-      } to solve homework or exam problems - possibly because they're unfamiliar with techniques, tricks, and strategies related to the ${
-        topic ? topic : "topic"
-      }.`,
-    Level5:
-      `The student has a demonstrated very solid understanding of the ${
-        topic ? topic : "topic"
-      } - both of the ${
-        topic ? topic : "topic"
-      } itself and practical applications of the ${
-        topic ? topic : "topic"
-      }.`,
+    Level1: `The student has not demonstrated any understanding of the ${
+      topic ? topic : "topic"
+    } at hand.`,
+    Level2: `The student has demonstrated an intutuitive understanding of the ${
+      topic ? topic : "topic"
+    }, but does not seeem to understand the mathematical notation.`,
+    Level3: `The student has a demonstrated a well rounded understanding of the ${
+      topic ? topic : "topic"
+    }, both intuitively and mathematically. However the student has not demonstrated comfortability with variations and corollaries of it that they'd use to solve problems they'd encounter in class or on homeworks.`,
+    Level4: `The student has demonstrated a well rounded understanding of the ${
+      topic ? topic : "topic"
+    } and practical, relevant corollaries or variations. However the student has not demonstrated comfortability with applying the ${
+      topic ? topic : "topic"
+    } to solve homework or exam problems - possibly because they're unfamiliar with techniques, tricks, and strategies related to the ${
+      topic ? topic : "topic"
+    }.`,
+    Level5: `The student has a demonstrated very solid understanding of the ${
+      topic ? topic : "topic"
+    } - both of the ${
+      topic ? topic : "topic"
+    } itself and practical applications of the ${topic ? topic : "topic"}.`,
   };
 
   const levelOfUnderstandingGuideMap = {
     Level1: `You should explain the ${
       topic ? topic : "topic"
     } and answer their questions in a way that is intuitive and easy to understand. You should not be using much, if any, mathematical notation. The goal is for the student to understand what the topic they're asking about is and what it does.`,
-    Level2:
-      `You should explain the ${
-        topic ? topic : "topic"
-      } and answer their questions mathematically. The goal is for the student to understand the mathematical notation of the topic they're asking about and be able to apply it to their intutive understanding.`,
-    Level3:
-      `You should explain the ${
-        topic ? topic : "topic"
-      } and answer their questions while trying to introduce to them relevant and practical corollaries or variations of the ${
-        topic ? topic : "topic"
-      }. Since the student has demonstrated an understanding of the ${
-        topic ? topic : "topic"
-      } at face value, the goal here is for the student to be comfortable with variations of it that they might see or use when solving problems or to simply expand their understanding of the ${
-        topic ? topic : "topic"
-      } outside of the original notation presented.`,
-    Level4:
-      `You should explain the ${
-        topic ? topic : "topic"
-      } and answer their questions while trying to introduce to them techniques and tricks for solving problems related to the ${
-        topic ? topic : "topic"
-      }. Since the student has demonstrated a well rounded understanding of the ${
-        topic ? topic : "topic"
-      } and its corollaries/variations, the goal here is simply for them to get better at solving homework or exam problems by expanding their knowledge of the ${
-        topic ? topic : "topic"
-      } and related techniques and tricks.`,
+    Level2: `You should explain the ${
+      topic ? topic : "topic"
+    } and answer their questions mathematically. The goal is for the student to understand the mathematical notation of the topic they're asking about and be able to apply it to their intutive understanding.`,
+    Level3: `You should explain the ${
+      topic ? topic : "topic"
+    } and answer their questions while trying to introduce to them relevant and practical corollaries or variations of the ${
+      topic ? topic : "topic"
+    }. Since the student has demonstrated an understanding of the ${
+      topic ? topic : "topic"
+    } at face value, the goal here is for the student to be comfortable with variations of it that they might see or use when solving problems or to simply expand their understanding of the ${
+      topic ? topic : "topic"
+    } outside of the original notation presented.`,
+    Level4: `You should explain the ${
+      topic ? topic : "topic"
+    } and answer their questions while trying to introduce to them techniques and tricks for solving problems related to the ${
+      topic ? topic : "topic"
+    }. Since the student has demonstrated a well rounded understanding of the ${
+      topic ? topic : "topic"
+    } and its corollaries/variations, the goal here is simply for them to get better at solving homework or exam problems by expanding their knowledge of the ${
+      topic ? topic : "topic"
+    } and related techniques and tricks.`,
     Level5:
       "No further guidance is necessarily needed at this level. Of course if the student wishes to keep practicing problems with you, or has questions abou the toipc, you should continue to guide and help them. However you can definitely recommend to the student to move on to a different topic at this point if they seem like they'd want to. Otherwise, there is no specific manner in which you should answer their questions or help them as they've already demonstrated a very well rounded understanding. Continue to solidfy their understanding by closing any gaps of knowledge related to this topic they may have.",
   };
@@ -106,11 +98,11 @@ export default function Audio() {
     }
   }
 
-  function formatTranscriptString(inputTranscript = transcript) {
+  function formatTranscriptString(rawTranscript = inputTranscript) {
     let formattedTranscript = "";
-    inputTranscript.forEach((transcriptObj) => {
-      formattedTranscript += `Tutor: "${transcriptObj.tutor}.\n"`;
-      formattedTranscript += `Student: "${transcriptObj.student}.\n"`;
+    rawTranscript.forEach((transcriptObj) => {
+      formattedTranscript += `Tutor: "${transcriptObj.tutor}."\n`;
+      formattedTranscript += `Student: "${transcriptObj.student}."\n`;
     });
     return formattedTranscript;
   }
@@ -213,13 +205,23 @@ export default function Audio() {
   ) {
     let messages = [];
     if (includePreviousSummary) {
+      messages.push({
+        role: "system",
+        content: `You are a helpful middle school and high school math tutor's assistant. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Here was your summary thus far of the conversation between the tutor and the assistant: \n"${notes}"\nHere is the most recent conversation between the tutor and the student: "\n${formatTranscriptString(
+          [transcript[transcript.length - 1]]
+        )}"\nCreate a new summary of their conversation thus using your previous summary and their most recent conversation. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
+      });
     } else {
       messages.push({
         role: "system",
-        content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should be concise, but include all key details about the conversation and the student's progress in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}`,
+        content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
+      });
+      messages.push({
+        role: "user",
+        content: formatTranscriptString(transcript),
       });
     }
-    messages.push({ role: "user", content: JSON.stringify(transcript) });
+    console.log(messages[0].content, messages[1]?.content);
     try {
       const response = await groq.chat.completions.create({
         messages: messages,
@@ -278,7 +280,7 @@ export default function Audio() {
     try {
       let inputText = recentInput;
       if (includeTranscript) {
-        let newTranscript = [...transcript];
+        let newTranscript = [...inputTranscript];
         newTranscript[newTranscript.length - 1] = {
           ...newTranscript[newTranscript.length - 1],
           student: recentInput,
@@ -288,7 +290,7 @@ export default function Audio() {
       let additionalSystemPrompt = includePreviousLevel
         ? `Here is a framework for assessing a student's level of understanding of the topic: ${JSON.stringify(
             levelOfUnderstandingMap
-          )}. Previously you had said the student was at ${level}. Use this framework to determine the student's current level of understanding and return the level they are at.`
+          )}. Previously you had said the student was at ${level}. Use this framework to determine the student's current level of understanding and return the level they are at. `
         : `Here is a framework for assessing a student's level of understanding of the topic: ${JSON.stringify(
             levelOfUnderstandingMap
           )}. Use this framework to determine the student's level of understanding and return the level they are at. `;
@@ -320,15 +322,20 @@ export default function Audio() {
         return;
       }
       const topic = response["requestedTopic"];
-      let newTranscript = [...transcript];
-      newTranscript[0].student = transcribedText;
+      let newTranscript = [
+        { tutor: "Hi, how can I help you today", student: transcribedText },
+      ];
       await transcribeText("What do you know about " + topic + "?");
       setTopic(topic);
       setTranscript([
         ...newTranscript,
         { tutor: "What do you know about " + topic + "?" },
       ]);
-    } else if (!transcript[1].student) {
+      setInputTranscript([
+        ...newTranscript,
+        { tutor: "What do you know about " + topic + "?" },
+      ]);
+    } else if (!inputTranscript[1].student) {
       const transcribedText = await transcribeAudio();
       const [levelOfUnderstanding, levelOfUnderstandingExplanation] =
         await extractStudentLevel(transcribedText, false, true);
@@ -338,20 +345,22 @@ export default function Audio() {
         setValidInput(false);
         return;
       }
-      transcript[1].tutor = "What do you know about " + topic + "?";
       const response = await askTutor(
         transcribedText,
-        [...transcript],
+        transcript,
         levelOfUnderstanding,
         levelOfUnderstandingExplanation
       );
       await transcribeText(response);
-      let newTranscript = [...transcript];
+      let newTranscript = transcript.map((transcriptObj) => {
+        return { tutor: transcriptObj.tutor, student: transcriptObj.student };
+      });
       newTranscript[1].student = transcribedText;
       newTranscript.push({
         tutor: response,
       });
       setTranscript(newTranscript);
+      setInputTranscript(newTranscript);
       setLevel(levelOfUnderstanding);
       setStage("Learn");
     } else {
@@ -419,11 +428,17 @@ export default function Audio() {
 
   async function learn() {
     if (intLevel(level) <= 4) {
-      if (transcript.length >= 3) {
-        const summary = await summarizeTranscript(transcript, false);
+      let summary = "";
+      let newTranscript = transcript.map(transcriptObj => {return {tutor: transcriptObj.tutor, student: transcriptObj.student}});
+      let newInputTranscript = inputTranscript.map(transcriptObj => {return {tutor: transcriptObj.tutor, student: transcriptObj.student}});;
+      const transcribedText = await transcribeAudio();
+      newTranscript[newTranscript.length - 1].student = transcribedText;
+      newInputTranscript[newInputTranscript.length - 1].student =
+        transcribedText;
+      if (inputTranscript.length >= 3) {
+        summary = await summarizeTranscript(newInputTranscript, notes != "");
         console.log("summary: " + summary);
       }
-      const transcribedText = await transcribeAudio();
       const [currLevel, currLevelExplanation] = await extractStudentLevel(
         transcribedText
       );
@@ -436,20 +451,25 @@ export default function Audio() {
       const diffLevel = currLevel != level;
       const response = await askTutor(
         transcribedText,
-        [...transcript],
+        inputTranscript,
         currLevel,
         currLevelExplanation
       );
       await transcribeText(response);
-      let newTranscript = [...transcript];
-      newTranscript[newTranscript.length - 1].student = transcribedText;
       newTranscript.push({ tutor: response });
-      setTranscript(newTranscript);
-      if (diffLevel) {
-        setLevel(currLevel);
+      newInputTranscript.push({ tutor: response });
+      if (inputTranscript.length >= 3) {
+        newInputTranscript.shift();
+        setNotes(summary);
       }
-      if (intLevel(currLevel) == 5) {
-        setStage("Practice");
+      setTranscript(newTranscript);
+      setInputTranscript(newInputTranscript);
+      console.log(newInputTranscript);
+      if (diffLevel) {
+        if (intLevel(currLevel) == 5) {
+          setStage("Practice");
+        }
+        setLevel(currLevel);
       }
     } else {
       console.error(
@@ -459,22 +479,8 @@ export default function Audio() {
   }
 
   async function main() {
+    console.log(inputTranscript);
     setValidInput(true);
-    console.log(
-      "stage: " + stage,
-      "topic: " + topic,
-      "transcript: " +
-        transcript.map(
-          (transcript) =>
-            "{tutor: " +
-            transcript.tutor +
-            ", student: " +
-            transcript.student +
-            "}"
-        ) +
-        " level: " +
-        level
-    );
     recordSwitchDisable("off");
     switch (stage) {
       case "Setup":
@@ -491,20 +497,30 @@ export default function Audio() {
   }
 
   return (
-    <div className="topBar">
-      <button
-        ref={recordAudioRef}
-        onClick={recording ? stopRecording : startRecording}
-        className={`recordAudioButton ${recording ? "recording" : ""}`}
-      >
-        {recording ? "Stop" : "Start"}
-      </button>
-      {audioBlob && (
-        <button onClick={main} ref={sendAudioRef} className="sendAudioButton">
-          Tutor Me!
+    <>
+      <div className="topBar">
+        <button
+          ref={recordAudioRef}
+          onClick={recording ? stopRecording : startRecording}
+          className={`recordAudioButton ${recording ? "recording" : ""}`}
+        >
+          {recording ? "Stop" : "Start"}
         </button>
-      )}
-      <audio ref={audioPlayerRef} hidden={!audioURL} />
-    </div>
+        {audioBlob && (
+          <button onClick={main} ref={sendAudioRef} className="sendAudioButton">
+            Tutor Me!
+          </button>
+        )}
+        <audio ref={audioPlayerRef} hidden={!audioURL} />
+      </div>
+      <ul>
+        {inputTranscript.map((transcriptObj) => (
+          <>
+            <li>{transcriptObj.tutor}</li>
+            <li>{transcriptObj.student}</li>
+          </>
+        ))}
+      </ul>
+    </>
   );
 }
