@@ -9,9 +9,20 @@ export function SharedProvider({ children }) {
   const [validInput, setValidInput] = useState(true);
   const [stage, setStage] = useState("Setup");
   const [topic, setTopic] = useState("");
+
+   //Formats the conversation transcript for easier processing in the API calls
+   function formatTranscriptString(rawTranscript = inputTranscript) {
+    let formattedTranscript = "";
+    rawTranscript.forEach((transcriptObj) => {
+      formattedTranscript += `Tutor: "${transcriptObj.tutor}."\n`;
+      formattedTranscript += `Student: "${transcriptObj.student}."\n`;
+    });
+    return formattedTranscript;
+  }
+
   return (
     <SharedContext.Provider
-      value={{ transcript, setTranscript, inputTranscript, setInputTranscript, equations, setEquations, stage, setStage, topic, setTopic, validInput, setValidInput }}
+      value={{ transcript, setTranscript, inputTranscript, setInputTranscript, equations, setEquations, stage, setStage, topic, setTopic, validInput, setValidInput, formatTranscriptString }}
     >
       {children}
     </SharedContext.Provider>

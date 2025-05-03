@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import Groq from "groq-sdk";
 import OpenAI from "openai/index.mjs";
 import { SharedContext } from "./SharedContext";
@@ -27,6 +27,7 @@ export default function Audio() {
     setTopic,
     validInput,
     setValidInput,
+    formatTranscriptString,
   } = useContext(SharedContext);
   const { stage, setStage } = useContext(SharedContext); //Stage of the conversation between the tutor and the student, i.e. Setup, Learn, or Practice
   const [level, setLevel] = useState(""); //Student's current level of understanding of the topic
@@ -105,16 +106,6 @@ export default function Audio() {
     } catch (err) {
       console.error(err);
     }
-  }
-
-  //Formats the conversation transcript for easier processing in the API calls
-  function formatTranscriptString(rawTranscript = inputTranscript) {
-    let formattedTranscript = "";
-    rawTranscript.forEach((transcriptObj) => {
-      formattedTranscript += `Tutor: "${transcriptObj.tutor}."\n`;
-      formattedTranscript += `Student: "${transcriptObj.student}."\n`;
-    });
-    return formattedTranscript;
   }
 
   //Disables the record and send audio buttons when recording is in progress
@@ -211,45 +202,9 @@ export default function Audio() {
     }
   }
 
-  //API call to LLM to summarize conversation between tutor and student
-  async function summarizeTranscript(
-    transcript,
-    includePreviousSummary = true
-  ) {
-    let messages = [];
-    //If there is a previous summary, new summary will be built on top of it
-    if (includePreviousSummary) {
-      messages.push({
-        role: "system",
-        content: `You are a helpful middle school and high school math tutor's assistant. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Here was your summary thus far of the conversation between the tutor and the assistant: \n"${notes}"\nHere is the most recent conversation between the tutor and the student: "\n${formatTranscriptString(
-          [transcript[transcript.length - 1]]
-        )}"\nCreate a new summary of their conversation thus using your previous summary and their most recent conversation. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
-      });
-    } else {
-      //If there is no previous summary, new summary will be created from scratch based on the entire transcript
-      messages.push({
-        role: "system",
-        content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
-      });
-      messages.push({
-        role: "user",
-        content: formatTranscriptString(transcript),
-      });
-    }
-    console.log(messages[0].content, messages[1]?.content);
-    try {
-      const response = await groq.chat.completions.create({
-        messages: messages,
-        model: "llama-3.3-70b-versatile",
-        response_format: { type: "json_object" },
-      });
-      return JSON.parse(response.choices[0].message.content)[
-        "conversationNotes"
-      ];
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  useEffect(() => {
+    transcribeText("Hi, how can I help you today?");
+  }, []);
 
   //API call to LLM to extract general information from the student's response
   async function extractInfo(
@@ -269,7 +224,7 @@ export default function Audio() {
           role: "system",
           content: `You are a helpful assistant. The following text is a student talking to their math tutor${
             topic ? " about " + topic : ""
-          }. Analyze the student's response and extract the student's ${info}. ${additionalSystemPrompt}Return the student's ${info} and your explanation for why you think this is thier ${info} as a json object with the following schema: {${infoJSONName}: ${infoJSONType}, explanation: String}. If it's unclear what the student's ${info} is from their most recent response, or if their response is completely unrelated to the conversation, set ${infoJSONName} to "invalidInput".`,
+          }. Analyze the student's response and extract the student's ${info}. ${additionalSystemPrompt}Return the student's ${info} and your explanation for why you think this is thier ${info} as a json object with the following schema: {${infoJSONName}: ${infoJSONType}, explanation: String}. If it's unclear what the student's ${info} is from their response, or if their response is completely unrelated to the conversation, set ${infoJSONName} to "invalidInput".`,
         },
         { role: "user", content: inputText },
       ];
@@ -324,6 +279,46 @@ export default function Audio() {
     }
   }
 
+  //API call to LLM to summarize conversation between tutor and student
+  async function summarizeTranscript(
+    transcript,
+    includePreviousSummary = true
+  ) {
+    let messages = [];
+    //If there is a previous summary, new summary will be built on top of it
+    if (includePreviousSummary) {
+      messages.push({
+        role: "system",
+        content: `You are a helpful middle school and high school math tutor's assistant. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Here was your summary thus far of the conversation between the tutor and the assistant: \n"${notes}"\nHere is the most recent conversation between the tutor and the student: "\n${formatTranscriptString(
+          [transcript[0]]
+        )}"\nCreate a new summary of their conversation thus using your previous summary and their most recent conversation. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
+      });
+    } else {
+      //If there is no previous summary, new summary will be created from scratch based on the entire transcript
+      messages.push({
+        role: "system",
+        content: `You are a helpful middle school and high school math tutor's assistant. The following text is the transcript of the tutor teaching the student about ${topic}. Your job is to create a summary of their converation for the tutor to use as a helpful reference. This summary should include all key details about the conversation, ideas about ${topic} covered, ideas or concepts related to ${topic} student struggled with, ideas or concepts related to ${topic} the student somewhat grasped, ideas or concepts related to ${topic} the student demonstrated mastery over, and the student's general progression in learning ${topic}. Return the summary as a json object with the following schema: {conversationNotes: String}.`,
+      });
+      messages.push({
+        role: "user",
+        content: formatTranscriptString([transcript[0]]),
+      });
+    }
+    console.log(messages[0].content, messages[1]?.content);
+    try {
+      const response = await groq.chat.completions.create({
+        messages: messages,
+        model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
+      });
+      return JSON.parse(response.choices[0].message.content)[
+        "conversationNotes"
+      ];
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   //Initial setup process to establish topic of disucssion and user's base starting level of understanding; occurs for first two audio inputs from student
   async function setup() {
     //First User Input
@@ -360,17 +355,16 @@ export default function Audio() {
         setValidInput(false);
         return;
       }
-      const tutorResponse = await askTutor(
-        transcribedText,
-        transcript,
-        levelOfUnderstanding,
-        levelOfUnderstandingExplanation
-      );
-      await transcribeText(tutorResponse);
       let newTranscript = transcript.map((transcriptObj) => {
         return { tutor: transcriptObj.tutor, student: transcriptObj.student };
       });
       newTranscript[1].student = transcribedText;
+      const tutorResponse = await askTutor(
+        newTranscript,
+        levelOfUnderstanding,
+        levelOfUnderstandingExplanation
+      );
+      await transcribeText(tutorResponse);
       newTranscript.push({
         tutor: tutorResponse,
       });
@@ -384,16 +378,11 @@ export default function Audio() {
   }
   //API call to LLM to generate tutor's response. Takes in student's most recent input, inputTranscript which is the most recent 5 conversations between the tutor and the student, newLevel which is the student's current level of udnerstanding, levelExplanation, and Summary of early conversation
   async function askTutor(
-    studentInput,
     inputTranscript,
     newLevel,
     levelExplanation = "",
     includeSummary = ""
   ) {
-    if (!studentInput) {
-      console.log("Need student input to ask tutor");
-      return;
-    }
     try {
       let messages = [
         {
@@ -407,7 +396,7 @@ export default function Audio() {
           content: `Here is a summarization of the beginning of your conversation with your student: "${includeSummary}".`,
         });
       }
-      inputTranscript.forEach((transcriptObj) => {
+      inputTranscript.forEach((transcriptObj, index) => {
         if (transcriptObj["tutor"]) {
           messages.push({
             role: "assistant",
@@ -415,10 +404,12 @@ export default function Audio() {
           });
         }
         if (transcriptObj["student"]) {
-          messages.push({
-            role: "user",
-            content: transcriptObj["student"],
-          });
+          if (index != inputTranscript.length - 1) {
+            messages.push({
+              role: "user",
+              content: transcriptObj["student"],
+            });
+          }
         }
       });
       messages.push({
@@ -429,7 +420,7 @@ export default function Audio() {
       });
       messages.push({
         role: "user",
-        content: studentInput,
+        content: inputTranscript[inputTranscript.length - 1]["student"],
       });
       console.log("messages: " + JSON.stringify(messages));
       const response = await groq.chat.completions.create({
@@ -469,12 +460,12 @@ export default function Audio() {
       //only summarize conversation after 5 inputs from student
       if (inputTranscript.length >= 5) {
         summary = await summarizeTranscript(newInputTranscript, notes != "");
+        newInputTranscript.shift();
         console.log("summary: " + summary);
       }
       const diffLevel = currLevel != level;
       const response = await askTutor(
-        transcribedText,
-        inputTranscript,
+        newInputTranscript,
         currLevel,
         currLevelExplanation,
         summary
@@ -483,8 +474,7 @@ export default function Audio() {
       newTranscript.push({ tutor: response });
       newInputTranscript.push({ tutor: response });
       //inputTranscript is only used for API calls, so only kept to 5 most recent inputs
-      if (newInputTranscript.length > 5) {
-        newInputTranscript.shift();
+      if (newInputTranscript.length >= 5) {
         setNotes(summary);
       }
       setTranscript(newTranscript);
@@ -537,14 +527,6 @@ export default function Audio() {
         )}
         <audio ref={audioPlayerRef} hidden={!audioURL} />
       </div>
-      <ul>
-        {inputTranscript.map((transcriptObj) => (
-          <>
-            <li>{transcriptObj.tutor}</li>
-            <li>{transcriptObj.student}</li>
-          </>
-        ))}
-      </ul>
     </>
   );
 }
