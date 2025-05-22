@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext, useEffect } from "react";
 import Groq from "groq-sdk";
 import OpenAI from "openai/index.mjs";
 import { SharedContext } from "./SharedContext";
-import "./App2.css";
+import "./App.css";
 export default function Audio() {
   const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
   const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;

@@ -1,4 +1,4 @@
-import "./App2.css";
+import "./App.css";
 import { useState, useRef, createContext } from "react";
 import Audio from "./Audio";
 import { SharedProvider } from "./SharedContext";

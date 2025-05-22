@@ -1,6 +1,6 @@
 import { useEffect, useRef, useContext, useState } from "react";
 import { SharedContext } from "./SharedContext";
-import "./App2.css";
+import "./App.css";
 import Groq from "groq-sdk";
 import {
   Expression,

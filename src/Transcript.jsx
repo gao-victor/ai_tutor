@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { SharedContext } from "./SharedContext";
-import "./App2.css"
+import "./App.css"
 
 export default function Transcript() {
   const { transcript, stage, validInput, setValidInput } = useContext(SharedContext);

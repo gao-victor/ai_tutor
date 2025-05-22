@@ -3,7 +3,7 @@ import { BlockMath } from "react-katex";
 import { SharedContext } from "./SharedContext";
 import Groq from "groq-sdk";
 import "katex/dist/katex.min.css"; // Import KaTeX CSS for styling
-import "./App2.css";
+import "./App.css";
 
 function MathEquations() {
   const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
