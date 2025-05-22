@@ -32,6 +32,7 @@ export default function Audio() {
   const { stage, setStage } = useContext(SharedContext); //Stage of the conversation between the tutor and the student, i.e. Setup, Learn, or Practice
   const [level, setLevel] = useState(""); //Student's current level of understanding of the topic
   const [notes, setNotes] = useState(""); //Summary of the conversation between the tutor and the student
+  const mediaStreamRef = useRef(null);
 
   //Level of Understanding framework used to assess student's level of understanding of the topic in extractStudentLevel API call
   const levelOfUnderstandingMap = {
@@ -129,6 +130,7 @@ export default function Audio() {
       audioPlayerRef.current.pause();
     }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaStreamRef.current = stream;
     mediaRecorderRef.current = new MediaRecorder(stream);
     const audioChunks = [];
 
@@ -148,6 +150,10 @@ export default function Audio() {
 
   function stopRecording() {
     mediaRecorderRef.current.stop();
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
   }
 
   async function transcribeAudio() {
@@ -194,7 +200,7 @@ export default function Audio() {
         audioPlayerRef.current.play().catch((error) => {
           console.error("Auto-play failed:", error);
         });
-        audioPlayerRef.current.playbackRate = 1.2;
+        audioPlayerRef.current.playbackRate = 1.1;
       }
     } catch (err) {
       console.error(err);
@@ -202,17 +208,14 @@ export default function Audio() {
     }
   }
 
-  useEffect(() => {
-    transcribeText("Hi, how can I help you today?");
-  }, []);
-
   //API call to LLM to extract general information from the student's response
   async function extractInfo(
     inputText,
     info,
     infoJSONName = info,
     infoJSONType = "String",
-    additionalSystemPrompt = ""
+    additionalSystemPrompt = "",
+    canChangeTopic = false
   ) {
     if (!inputText) {
       console.log("Input text null");
@@ -222,9 +225,9 @@ export default function Audio() {
       let messages = [
         {
           role: "system",
-          content: `You are a helpful assistant. The following text is a student talking to their math tutor${
+          content: `You are a helpful math tutor's assistant. The following text is a student talking to their math tutor${
             topic ? " about " + topic : ""
-          }. Analyze the student's response and extract the student's ${info}. ${additionalSystemPrompt}Return the student's ${info} and your explanation for why you think this is thier ${info} as a json object with the following schema: {${infoJSONName}: ${infoJSONType}, explanation: String}. If it's unclear what the student's ${info} is from their response, or if their response is completely unrelated to the conversation, set ${infoJSONName} to "invalidInput".`,
+          }. Analyze the student's response and extract the student's ${info}. ${additionalSystemPrompt}Return the student's ${info} and your explanation for why you think this is thier ${info} as a json object with the following schema: {${infoJSONName}: ${infoJSONType}, explanation: String}. If it's unclear what the student's ${info} is from their response, or if their response is completely unrelated to the conversation, set ${infoJSONName} to "invalidInput". ${canChangeTopic ? `If the student's response indicates that they'd like to change the topic of discussion, set ${infoJSONName} to "changeTopic" and "explanation" to the topic they're asking about; in this case if they're trying to change the topic, the "explanation" field should only be the topic they're asking about.` : ""}`,
         },
         { role: "user", content: inputText },
       ];
@@ -247,7 +250,8 @@ export default function Audio() {
   async function extractStudentLevel(
     recentInput,
     includePreviousLevel = true,
-    includeTranscript = true
+    includeTranscript = true,
+    canChangeTopic = false
   ) {
     try {
       let inputText = recentInput;
@@ -271,7 +275,8 @@ export default function Audio() {
         "level of understanding",
         "levelOfUnderstanding",
         "String",
-        additionalSystemPrompt
+        additionalSystemPrompt,
+        canChangeTopic
       );
       return [response["levelOfUnderstanding"], response["explanation"]];
     } catch (err) {
@@ -348,11 +353,21 @@ export default function Audio() {
     } else if (!inputTranscript[1].student) {
       const transcribedText = await transcribeAudio();
       const [levelOfUnderstanding, levelOfUnderstandingExplanation] =
-        await extractStudentLevel(transcribedText, false, true);
+        await extractStudentLevel(transcribedText, false, true, true);
       if (levelOfUnderstanding == "invalidInput") {
         console.log("Invalid input, need to try again");
         await transcribeText("Sorry can you repeat that?");
         setValidInput(false);
+        return;
+      }
+      else if (levelOfUnderstanding == "changeTopic") {
+        let newTopicTranscript = [];
+        newTopicTranscript.push({tutor: "Hi, how can I help you today", student: transcribedText});
+        newTopicTranscript.push({tutor: `Sorry about that, let's change the topic to ${levelOfUnderstandingExplanation}. What do you know about ${levelOfUnderstandingExplanation}?`});
+        await transcribeText(`Sorry about that, let's change the topic to ${levelOfUnderstandingExplanation}. What do you know about ${levelOfUnderstandingExplanation}?`);
+        setTranscript(newTopicTranscript);
+        setInputTranscript(newTopicTranscript);
+        setTopic(levelOfUnderstandingExplanation);
         return;
       }
       let newTranscript = transcript.map((transcriptObj) => {
@@ -492,9 +507,122 @@ export default function Audio() {
     }
   }
 
+  //API call to LLM to generate tutor's practice questions
+  async function askTutorPracticeMode(
+    inputTranscript,
+    newLevel,
+    levelExplanation = "",
+    includeSummary = ""
+  ) {
+    try {
+      let messages = [
+        {
+          role: "system",
+          content: `You are a middle school and high school math tutor. You are teaching your student about ${topic}.`,
+        },
+      ];
+      if (includeSummary) {
+        messages.push({
+          role: "system",
+          content: `Here is a summarization of the beginning of your conversation with your student: "${includeSummary}".`,
+        });
+      }
+      inputTranscript.forEach((transcriptObj, index) => {
+        if (transcriptObj["tutor"]) {
+          messages.push({
+            role: "assistant",
+            content: transcriptObj["tutor"],
+          });
+        }
+        if (transcriptObj["student"]) {
+          if (index != inputTranscript.length - 1) {
+            messages.push({
+              role: "user",
+              content: transcriptObj["student"],
+            });
+          }
+        }
+      });
+      messages.push({
+        role: "system",
+        content: `Here is your assistant's assesment of the student's understanding of ${topic}: "${
+          levelExplanation + " " + levelOfUnderstandingGuideMap[newLevel]
+        }". Use this information as a guide to respond to your student.`,
+      });
+      messages.push({
+        role: "user",
+        content: inputTranscript[inputTranscript.length - 1]["student"],
+      });
+      console.log("messages: " + JSON.stringify(messages));
+      const response = await groq.chat.completions.create({
+        messages: messages,
+        model: "llama-3.3-70b-versatile",
+      });
+      console.log("tutor said: " + response.choices[0].message.content);
+      return response.choices[0].message.content;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function practice() {
+    //ask tutor in practice mode - generate questions, answer and check questions, give feedback, repeast
+    if (intLevel(level) == 5) {
+      const transcribedText = await transcribeAudio();
+      const [currLevel, currLevelExplanation] = await extractStudentLevel(
+        transcribedText
+      );
+      if (currLevel == "invalidInput") {
+        console.log("Invalid input, need to try again");
+        await transcribeText("Sorry can you repeat that?");
+        setValidInput(false);
+        return;
+      }
+      let summary = "";
+      let newTranscript = transcript.map((transcriptObj) => {
+        return { tutor: transcriptObj.tutor, student: transcriptObj.student };
+      });
+      let newInputTranscript = inputTranscript.map((transcriptObj) => {
+        return { tutor: transcriptObj.tutor, student: transcriptObj.student };
+      });
+      newTranscript[newTranscript.length - 1].student = transcribedText;
+      newInputTranscript[newInputTranscript.length - 1].student =
+        transcribedText;
+      //only summarize conversation after 5 inputs from student
+      if (inputTranscript.length >= 5) {
+        summary = await summarizeTranscript(newInputTranscript, notes != "");
+        newInputTranscript.shift();
+        console.log("summary: " + summary);
+      }
+      const diffLevel = currLevel != level;
+      const response = await askTutorPracticeMode();
+      await transcribeText(response);
+      newTranscript.push({ tutor: response });
+      newInputTranscript.push({ tutor: response });
+      //inputTranscript is only used for API calls, so only kept to 5 most recent inputs
+      if (newInputTranscript.length >= 5) {
+        setNotes(summary);
+      }
+      setTranscript(newTranscript);
+      setInputTranscript(newInputTranscript);
+      if (intLevel(currLevel) < 5) {
+        setStage("Learn");
+        setLevel(currLevel);
+      }
+    } else {
+      console.error(
+        "Shouldn't be here; level is not 5 but still at the practice stage"
+      );
+    }
+    //Still check student's level of understanding in case in turns out to be lower than expected
+  }
+
   async function main() {
     console.log(inputTranscript);
     setValidInput(true);
+    if (recording){
+      stopRecording();
+    }
     recordSwitchDisable("off");
     switch (stage) {
       case "Setup":

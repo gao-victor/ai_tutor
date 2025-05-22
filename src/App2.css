@@ -6,7 +6,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Open Sans', sans-serif;
-  background-color: #e9ecef; /* a light gray background */
+  background-color: #fafaec; /* a light gray background */
 }
 
 button:disabled{
@@ -22,7 +22,7 @@ button:disabled{
 .appContainer {
   max-width: 1000px;  /* controls the width; adjust as desired */
   margin: 40px auto;  /* centers horizontally with top/bottom spacing */
-  background-color: #fff;
+  background-color: #eae3c2;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   display: flex;
@@ -104,7 +104,7 @@ button:disabled{
 /* --- MATH EQUATIONS SECTION (chalkboard) --- */
 .equationsSection {
   /* Keep some vertical height, but you can tweak as needed */
-  height: 200px; 
+  height: 400px; 
   background-color: #324d2a; /* dark green chalkboard color */
   color: #ffffff;
   border: 10px solid #8b5a2b; /* wood-like border */
@@ -134,7 +134,7 @@ button:disabled{
   margin: 20px;
   border: 1px solid #ccc;
   background-color: #fff;
-  height: 400px; /* example height, adjust as needed */
+  height: 25vh; /* example height, adjust as needed */
   position: relative;
 }
 
@@ -165,6 +165,7 @@ button:disabled{
   /* Center the transcript container itself */
   margin: 0 auto; 
   width: 90%; /* or another narrower width inside the .appContainer */
+  height: 15vh;
   min-height: 150px;
   max-height: 250px; /* if you want a fixed max height */
   overflow-y: auto;
