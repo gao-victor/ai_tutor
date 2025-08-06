@@ -1,37 +1,56 @@
-import "./App.css";
-import { useState, useRef, createContext } from "react";
-import Audio from "./Audio";
-import { SharedProvider } from "./SharedContext";
-import Transcript from "./Transcript";
-import MathEquations from "./MathEquations";
-
-
+import React from "react";
 import {
-  Expression,
-  GraphingCalculator,
-  useHelperExpression,
-} from "desmos-react";
-import GraphingCalculatorComponent from "./GraphingCalculator";
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Login from "./components/Auth/Login";
+import Register from "./components/Auth/Register";
+import MainApp from "./components/MainApp";
+import SessionList from "./components/Sessions/SessionList";
+import "./App.css";
 
-export default function App() {
-  const gcEquationInputRef = useRef(null);
-  const gcRef = useRef(null);
-  const [equations, setEquations] = useState([]);
-  const [equationCount, setEquationCount] = useState(0);
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
 
-  function addEquation(equation) {
-    setEquations([...equations, equation]);
-    setEquationCount(equationCount + 1);
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
+  return user ? children : <Navigate to="/login" />;
+};
+
+const App = () => {
   return (
-    <div className="appContainer">
-      <SharedProvider>
-        <Audio></Audio>
-        <MathEquations></MathEquations>
-        <GraphingCalculatorComponent></GraphingCalculatorComponent>
-        <Transcript></Transcript>
-      </SharedProvider>
-    </div>
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <SessionList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/session/:sessionId"
+              element={
+                <PrivateRoute>
+                  <MainApp />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
-}
+};
+
+export default App;

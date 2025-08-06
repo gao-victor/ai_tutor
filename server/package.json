@@ -1,0 +1,23 @@
+{
+  "name": "ai-tutor-server",
+  "version": "1.0.0",
+  "description": "Backend server for AI Math Tutor application",
+  "main": "src/index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "dev": "nodemon src/index.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+} 
