@@ -3,7 +3,8 @@ import Groq from "groq-sdk";
 import OpenAI from "openai/index.mjs";
 import { SharedContext } from "../../contexts/SharedContext";
 import "../../App.css";
-export default function Audio() {
+
+export default function Audio({ error, setError }) {
   const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
   const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
@@ -20,18 +21,16 @@ export default function Audio() {
   const sendAudioRef = useRef(null);
   const {
     transcript,
-    setTranscript,
     inputTranscript,
-    setInputTranscript,
     topic,
-    setTopic,
     validInput,
     setValidInput,
     formatTranscriptString,
+    level,
+    notes,
+    updateSession,
+    stage,
   } = useContext(SharedContext);
-  const { stage, setStage } = useContext(SharedContext); //Stage of the conversation between the tutor and the student, i.e. Setup, Learn, or Practice
-  const [level, setLevel] = useState(""); //Student's current level of understanding of the topic
-  const [notes, setNotes] = useState(""); //Summary of the conversation between the tutor and the student
   const mediaStreamRef = useRef(null);
 
   //Level of Understanding framework used to assess student's level of understanding of the topic in extractStudentLevel API call
@@ -176,6 +175,7 @@ export default function Audio() {
       return transcription.text;
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
       return "";
     }
   }
@@ -204,6 +204,7 @@ export default function Audio() {
       }
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
       return "";
     }
   }
@@ -247,6 +248,7 @@ export default function Audio() {
       return JSON.parse(completion.choices[0].message.content);
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
     }
   }
 
@@ -325,6 +327,7 @@ export default function Audio() {
       ];
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
     }
   }
 
@@ -350,9 +353,11 @@ export default function Audio() {
         { tutor: "Hi, how can I help you today", student: transcribedText },
         { tutor: "What do you know about " + topic + "?" },
       ];
-      setTopic(topic);
-      setTranscript(newTranscript);
-      setInputTranscript(newTranscript);
+      await updateSession({
+        topic: topic,
+        transcript: newTranscript,
+        inputTranscript: newTranscript,
+      });
       //Second User Input
     } else if (!inputTranscript[1].student) {
       const transcribedText = await transcribeAudio();
@@ -375,9 +380,11 @@ export default function Audio() {
         await transcribeText(
           `Sorry about that, let's change the topic to ${levelOfUnderstandingExplanation}. What do you know about ${levelOfUnderstandingExplanation}?`
         );
-        setTranscript(newTopicTranscript);
-        setInputTranscript(newTopicTranscript);
-        setTopic(levelOfUnderstandingExplanation);
+        await updateSession({
+          transcript: newTopicTranscript,
+          inputTranscript: newTopicTranscript,
+          topic: levelOfUnderstandingExplanation,
+        });
         return;
       }
       let newTranscript = transcript.map((transcriptObj) => {
@@ -393,10 +400,12 @@ export default function Audio() {
       newTranscript.push({
         tutor: tutorResponse,
       });
-      setTranscript(newTranscript);
-      setInputTranscript(newTranscript);
-      setLevel(levelOfUnderstanding);
-      setStage("Learn");
+      await updateSession({
+        transcript: newTranscript,
+        inputTranscript: newTranscript,
+        level: levelOfUnderstanding,
+        stage: "Learn",
+      });
     } else {
       console.error("Set up failed, should not have reached this point");
     }
@@ -456,6 +465,7 @@ export default function Audio() {
       return response.choices[0].message.content;
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
     }
   }
 
@@ -499,17 +509,24 @@ export default function Audio() {
       newTranscript.push({ tutor: response });
       newInputTranscript.push({ tutor: response });
       //inputTranscript is only used for API calls, so only kept to 5 most recent inputs
-      if (newInputTranscript.length >= 5) {
-        setNotes(summary);
+
+      const updates = {
+        transcript: newTranscript,
+        inputTranscript: newInputTranscript,
+      };
+
+      if (summary != "") {
+        updates.notes = summary;
       }
-      setTranscript(newTranscript);
-      setInputTranscript(newInputTranscript);
+
       if (diffLevel) {
         if (intLevel(currLevel) == 5) {
-          setStage("Practice");
+          updates.stage = "Practice";
         }
-        setLevel(currLevel);
+        updates.level = currLevel;
       }
+
+      await updateSession(updates);
     } else {
       console.error(
         "Shouldn't be here; level is past 4 but still at the learning stage "
@@ -572,6 +589,7 @@ export default function Audio() {
       return response.choices[0].message.content;
     } catch (err) {
       console.error(err);
+      setError("Error with API's; please try again later");
     }
   }
 
@@ -609,16 +627,22 @@ export default function Audio() {
       await transcribeText(response);
       newTranscript.push({ tutor: response });
       newInputTranscript.push({ tutor: response });
-      //inputTranscript is only used for API calls, so only kept to 5 most recent inputs
-      if (newInputTranscript.length >= 5) {
-        setNotes(summary);
+
+      const updates = {
+        transcript: newTranscript,
+        inputTranscript: newInputTranscript,
+      };
+
+      if (summary) {
+        updates.notes = summary;
       }
-      setTranscript(newTranscript);
-      setInputTranscript(newInputTranscript);
+
       if (intLevel(currLevel) < 5) {
-        setStage("Learn");
-        setLevel(currLevel);
+        updates.stage = "Learn";
+        updates.level = currLevel;
       }
+
+      await updateSession(updates);
     } else {
       console.error(
         "Shouldn't be here; level is not 5 but still at the practice stage"
@@ -628,12 +652,12 @@ export default function Audio() {
   }
 
   async function main() {
-    console.log(inputTranscript);
     setValidInput(true);
     if (recording) {
       stopRecording();
     }
     recordSwitchDisable("off");
+
     switch (stage) {
       case "Setup":
         await setup();

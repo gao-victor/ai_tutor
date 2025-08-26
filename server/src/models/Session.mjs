@@ -25,13 +25,24 @@ const sessionSchema = new mongoose.Schema({
     default: 'active'
   },
   transcript: [{
-    Tutor: String,
-    Student: String,
+    tutor: String,
+    student: String,
     timestamp: {
       type: Date,
       default: Date.now
     }
   }],
+  inputTranscript: [{
+    tutor: String,
+    student: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  equations: [String],
+  graphingEquations: [[String]],
+  notes: String,
   createdAt: {
     type: Date,
     default: Date.now

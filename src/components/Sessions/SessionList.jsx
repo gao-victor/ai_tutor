@@ -31,11 +31,7 @@ const SessionList = () => {
 
   const createNewSession = async () => {
     try {
-      const response = await axios.post("http://localhost:5001/api/sessions", {
-        topic: "New Topic",
-        level: "Beginner",
-        stage: "Setup",
-      });
+      const response = await axios.post("http://localhost:5001/api/sessions");
       navigate(`/session/${response.data._id}`);
     } catch (err) {
       setError("Failed to create new session");

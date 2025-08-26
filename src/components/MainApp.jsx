@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -6,17 +6,24 @@ import Audio from "./Tutor/Audio";
 import MathEquations from "./Tutor/MathEquations";
 import GraphingCalculatorComponent from "./Tutor/GraphingCalculator";
 import Transcript from "./Tutor/Transcript";
-import { SharedProvider } from "../contexts/SharedContext";
+import { SharedContext } from "../contexts/SharedContext";
 
 const MainApp = () => {
   const { user, logout } = useAuth();
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const gcEquationInputRef = useRef(null);
   const gcRef = useRef(null);
+  const {
+    updateSession,
+    updateSessionState,
+    topic,
+    level,
+    stage,
+    error,
+    setError,
+  } = useContext(SharedContext);
 
   useEffect(() => {
     fetchSession();
@@ -27,7 +34,36 @@ const MainApp = () => {
       const response = await axios.get(
         `http://localhost:5001/api/sessions/${sessionId}`
       );
-      setSession(response.data);
+      // Initialize session with default values for missing fields
+      const sessionData = {
+        ...response.data,
+        transcript: response.data.transcript || [
+          { tutor: "Hi, how can I help you today?" },
+        ],
+        inputTranscript: response.data.inputTranscript || [
+          { tutor: "Hi, how can I help you today?" },
+        ],
+        equations: response.data.equations || [],
+        graphingEquations: response.data.graphingEquations || [],
+        stage: response.data.stage || "Setup",
+        topic: response.data.topic || "",
+      };
+      const validUpdates = [
+        "transcript",
+        "inputTranscript",
+        "equations",
+        "graphingEquations",
+        "stage",
+        "topic",
+        "level",
+        "notes",
+        "validInput",
+      ];
+      for (const key of Object.keys(sessionData)) {
+        if (validUpdates.includes(key)) {
+          updateSessionState(key, sessionData[key]);
+        }
+      }
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch session");
@@ -35,21 +71,8 @@ const MainApp = () => {
     }
   };
 
-  const updateSession = async (updates) => {
-    try {
-      const response = await axios.patch(
-        `http://localhost:5001/api/sessions/${sessionId}`,
-        updates
-      );
-      setSession(response.data);
-    } catch (err) {
-      setError("Failed to update session");
-    }
-  };
-
   if (loading) return <div>Loading session...</div>;
   if (error) return <div className="error-message">{error}</div>;
-  if (!session) return <div>Session not found</div>;
 
   return (
     <div className="appContainer">
@@ -62,22 +85,20 @@ const MainApp = () => {
         </div>
         <div className="header-right">
           <span className="session-info">
-            {session.topic} ({session.level})
+            {topic} ({level})
           </span>
           <button onClick={logout} className="logout-button">
             Logout
           </button>
         </div>
       </div>
-      <SharedProvider>
-        <Audio />
-        <MathEquations />
-        <GraphingCalculatorComponent
-          ref={gcRef}
-          equationInputRef={gcEquationInputRef}
-        />
-        <Transcript />
-      </SharedProvider>
+      <Audio error={error} setError={setError} />
+      <MathEquations />
+      <GraphingCalculatorComponent
+        ref={gcRef}
+        equationInputRef={gcEquationInputRef}
+      />
+      <Transcript />
     </div>
   );
 };

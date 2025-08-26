@@ -10,14 +10,12 @@ function MathEquations() {
   const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
   const {
     inputTranscript,
-    setInputTranscript,
     equations,
     setEquations,
     stage,
-    setStage,
     topic,
-    setTopic,
     formatTranscriptString,
+    updateSession,
   } = useContext(SharedContext);
 
   async function getMathEquations() {
@@ -43,8 +41,7 @@ function MathEquations() {
 
       const responseJSON = JSON.parse(response.choices[0].message.content);
       const newEquations = responseJSON.equations;
-      console.log(newEquations);
-      setEquations(newEquations);
+      await updateSession({ equations: newEquations });
     } catch (err) {
       console.error(err);
     }

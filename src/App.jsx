@@ -8,8 +8,10 @@ import {
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
+import Welcome from "./components/Welcome";
 import MainApp from "./components/MainApp";
 import SessionList from "./components/Sessions/SessionList";
+import SessionWrapper from "./components/SessionWrapper";
 import "./App.css";
 
 const PrivateRoute = ({ children }) => {
@@ -19,7 +21,7 @@ const PrivateRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/welcome" />;
 };
 
 const App = () => {
@@ -28,6 +30,7 @@ const App = () => {
       <Router>
         <div className="app">
           <Routes>
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
@@ -42,7 +45,7 @@ const App = () => {
               path="/session/:sessionId"
               element={
                 <PrivateRoute>
-                  <MainApp />
+                  <SessionWrapper />
                 </PrivateRoute>
               }
             />

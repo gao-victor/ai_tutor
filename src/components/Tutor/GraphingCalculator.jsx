@@ -14,16 +14,14 @@ export default function GraphingCalculatorComponent() {
   const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
   const {
     inputTranscript,
-    setInputTranscript,
     stage,
-    setStage,
     topic,
-    setTopic,
     formatTranscriptString,
+    graphingEquations,
+    updateSession,
   } = useContext(SharedContext);
   const [currentGraphingEquation, setCurrentGraphingEquation] = useState(0);
   const [playEquations, setPlayEquations] = useState(false);
-  const [graphingEquations, setGraphingEquations] = useState([]);
 
   // Interval to loop through graphingEquations on UI by incrementing currentGraphingEquation if playEquations is true
   useEffect(() => {
@@ -78,10 +76,13 @@ export default function GraphingCalculatorComponent() {
       const responseJSON = JSON.parse(response.choices[0].message.content);
       newGraphingEquations = responseJSON["graphs"];
       console.log(newGraphingEquations);
-      setGraphingEquations(newGraphingEquations);
+      await updateSession({
+        graphingEquations: newGraphingEquations,
+      });
       setCurrentGraphingEquation(0); // Always reset to first set
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Failed to update session:", error);
+      throw new Error("Failed to update session");
     }
   }
 
