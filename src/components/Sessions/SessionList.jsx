@@ -47,43 +47,99 @@ const SessionList = () => {
     }
   };
 
-  if (loading) return <div>Loading sessions...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (loading) {
+    return (
+      <div className="sessions-container">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading your math sessions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="sessions-container">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>Oops! Something went wrong</h3>
+          <p className="error-message">{error}</p>
+          <button onClick={fetchSessions} className="retry-button">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="sessions-container">
       <div className="sessions-header">
-        <h2>Your Sessions</h2>
+        <div className="header-content">
+          <h1>Your Math Sessions</h1>
+          <p>Continue learning where you left off or start something new</p>
+        </div>
         <button onClick={createNewSession} className="new-session-button">
+          <span className="button-icon">+</span>
           New Session
         </button>
       </div>
+
       <div className="sessions-list">
         {sessions.length === 0 ? (
-          <p>No sessions yet. Start a new one!</p>
+          <div className="empty-state">
+            <div className="empty-icon">📚</div>
+            <h3>No sessions yet</h3>
+            <p>
+              Start your first math tutoring session and begin your learning
+              journey!
+            </p>
+            <button
+              onClick={createNewSession}
+              className="start-learning-button"
+            >
+              Start Learning
+            </button>
+          </div>
         ) : (
           sessions.map((session) => (
             <div key={session._id} className="session-card">
               <div className="session-info">
-                <h3>{session.topic}</h3>
-                <p>Level: {session.level}</p>
-                <p>Stage: {session.stage}</p>
-                <p>
-                  Last updated:{" "}
-                  {new Date(session.updatedAt).toLocaleDateString()}
-                </p>
+                <div className="session-header">
+                  <h3>{session.topic || "Math Session"}</h3>
+                  <div className="session-badge">
+                    {session.level || "Beginner"}
+                  </div>
+                </div>
+                <div className="session-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Stage:</span>
+                    <span className="detail-value">
+                      {session.stage || "Getting Started"}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Last updated:</span>
+                    <span className="detail-value">
+                      {new Date(session.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
               </div>
               <div className="session-actions">
                 <button
                   onClick={() => navigate(`/session/${session._id}`)}
                   className="continue-button"
                 >
+                  <span className="button-icon">▶️</span>
                   Continue
                 </button>
                 <button
                   onClick={() => deleteSession(session._id)}
                   className="delete-button"
                 >
+                  <span className="button-icon">🗑️</span>
                   Delete
                 </button>
               </div>

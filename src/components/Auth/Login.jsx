@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Login = () => {
@@ -35,33 +35,41 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <h2>Login</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+      <div className="auth-content">
+        <h2>Welcome Back</h2>
+        {error && <div className="error-message">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Enter your email"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+          <button type="submit">Sign In</button>
+        </form>
+        <div className="auth-links">
+          <p>Don't have an account? <Link to="/register">Create one here</Link></p>
+          <p><Link to="/welcome">← Back to Welcome</Link></p>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
+      </div>
     </div>
   );
 };
