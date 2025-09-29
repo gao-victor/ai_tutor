@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="32" fill="#5E43F6"/>
+
+  <!-- Chalkboard -->
+  <rect x="20" y="16" width="30" height="22" rx="3" ry="3"
+        fill="none" stroke="white" stroke-width="2"/>
+
+  <!-- Equation centered inside the board -->
+  <text x="35" y="28" text-anchor="middle"
+        font-family="ui-monospace, Menlo, Consolas, 'SFMono-Regular', monospace"
+        font-size="7" fill="white">x+y=z</text>
+
+  <!-- Minimal tutor silhouette (left-bottom, without arm) -->
+  <g fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+    <!-- head -->
+    <circle cx="14" cy="40" r="4"/>
+    <!-- body block -->
+    <path d="M10 44 H18 V52 H10 Z" stroke-linejoin="round"/>
+    <!-- tie -->
+    <path d="M14 44 L16 47 L14 50 L12 47 Z" stroke-width="1.5"/>
+  </g>
+</svg>

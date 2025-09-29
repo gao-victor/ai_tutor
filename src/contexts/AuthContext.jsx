@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/api";
 
 const AuthContext = createContext(null);
 
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get("http://localhost:5001/api/auth/me");
+        const response = await axios.get(API_ENDPOINTS.AUTH.ME);
         setUser(response.data);
       } catch (error) {
         console.log("Token invalid, attempting refresh...");
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         if (refreshToken) {
           try {
             const refreshResponse = await axios.post(
-              "http://localhost:5001/api/auth/refresh",
+              API_ENDPOINTS.AUTH.REFRESH,
               {
                 refreshToken,
               }
@@ -80,13 +81,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
+      });
 
       const {
         token: newToken,
@@ -114,14 +112,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/auth/register",
-        {
-          name,
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, {
+        name,
+        email,
+        password,
+      });
 
       const {
         token: newToken,
@@ -151,7 +146,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Call backend logout endpoint to invalidate refresh token
       if (token) {
-        await axios.post("http://localhost:5001/api/auth/logout");
+        await axios.post(API_ENDPOINTS.AUTH.LOGOUT);
       }
     } catch (error) {
       console.log("Logout error:", error);

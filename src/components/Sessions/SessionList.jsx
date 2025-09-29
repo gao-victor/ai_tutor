@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
+import { API_ENDPOINTS } from "../../config/api";
 
 const SessionList = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -20,7 +21,7 @@ const SessionList = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await axios.get("http://localhost:5001/api/sessions");
+      const response = await axios.get(API_ENDPOINTS.SESSIONS.LIST);
       setSessions(response.data);
       setLoading(false);
     } catch (err) {
@@ -31,7 +32,7 @@ const SessionList = () => {
 
   const createNewSession = async () => {
     try {
-      const response = await axios.post("http://localhost:5001/api/sessions");
+      const response = await axios.post(API_ENDPOINTS.SESSIONS.CREATE);
       navigate(`/session/${response.data._id}`);
     } catch (err) {
       setError("Failed to create new session");
@@ -40,7 +41,7 @@ const SessionList = () => {
 
   const deleteSession = async (sessionId) => {
     try {
-      await axios.delete(`http://localhost:5001/api/sessions/${sessionId}`);
+      await axios.delete(API_ENDPOINTS.SESSIONS.DELETE(sessionId));
       setSessions(sessions.filter((session) => session._id !== sessionId));
     } catch (err) {
       setError("Failed to delete session");
@@ -79,11 +80,13 @@ const SessionList = () => {
         <div className="header-content">
           <h1>Your Math Sessions</h1>
           <p>Continue learning where you left off or start something new</p>
+          
         </div>
         <button onClick={createNewSession} className="new-session-button">
           <span className="button-icon">+</span>
           New Session
         </button>
+
       </div>
 
       <div className="sessions-list">

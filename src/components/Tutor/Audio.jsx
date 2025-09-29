@@ -1,17 +1,10 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import Groq from "groq-sdk";
-import OpenAI from "openai/index.mjs";
 import { SharedContext } from "../../contexts/SharedContext";
 import "../../App.css";
+import axios from "axios";
+import { API_ENDPOINTS } from "../../config/api";
 
 export default function Audio({ error, setError }) {
-  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-  const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
-  const openai = new OpenAI({
-    apiKey: openaiApiKey,
-    dangerouslyAllowBrowser: true,
-  });
   const [audioURL, setAudioURL] = useState("");
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -161,18 +154,24 @@ export default function Audio({ error, setError }) {
       return;
     }
     try {
-      console.log("transcribing audio now...");
-      const audioFile = new File([audioBlob], "audio.wav", {
-        type: "audio/wav",
-      });
-      const transcription = await groq.audio.transcriptions.create({
-        file: audioFile,
-        model: "whisper-large-v3",
-        response_format: "json",
-        language: "en",
-      });
-      console.log("transcribed audio: " + transcription.text);
-      return transcription.text;
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "audio.wav");
+
+      const response = await axios.post(
+        API_ENDPOINTS.AI.TRANSCRIBE_AUDIO,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        return response.data.text;
+      } else {
+        throw new Error(response.data.error || "Transcription failed");
+      }
     } catch (err) {
       console.error(err);
       setError("Error with API's; please try again later");
@@ -186,21 +185,29 @@ export default function Audio({ error, setError }) {
       return;
     }
     try {
-      console.log("transcribing text to audio now...");
-      const response = await openai.audio.speech.create({
-        model: "tts-1",
-        voice: "alloy",
-        input: inputText,
+      const response = await axios.post(API_ENDPOINTS.AI.TRANSCRIBE_TEXT, {
+        inputText: inputText,
       });
-      const audioResponse = await response.blob();
-      const audioResponseURL = URL.createObjectURL(audioResponse);
-      setAudio(audioResponse, audioResponseURL);
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.src = audioResponseURL;
-        audioPlayerRef.current.play().catch((error) => {
-          console.error("Auto-play failed:", error);
-        });
-        audioPlayerRef.current.playbackRate = 1.1;
+
+      if (response.data.success) {
+        // Convert base64 audio data back to blob
+        const audioData = response.data.audio_data;
+        const audioBuffer = Uint8Array.from(atob(audioData), (c) =>
+          c.charCodeAt(0)
+        );
+        const audioBlob = new Blob([audioBuffer], { type: "audio/mp3" });
+        const audioResponseURL = URL.createObjectURL(audioBlob);
+
+        setAudio(audioBlob, audioResponseURL);
+        if (audioPlayerRef.current) {
+          audioPlayerRef.current.src = audioResponseURL;
+          audioPlayerRef.current.play().catch((error) => {
+            console.error("Auto-play failed:", error);
+          });
+          audioPlayerRef.current.playbackRate = 1.1;
+        }
+      } else {
+        throw new Error(response.data.error || "Text-to-speech failed");
       }
     } catch (err) {
       console.error(err);
@@ -236,16 +243,11 @@ export default function Audio({ error, setError }) {
         },
         { role: "user", content: inputText },
       ];
-      console.log("messages: " + JSON.stringify(messages));
-      const completion = await groq.chat.completions.create({
+      const completion = await axios.post(API_ENDPOINTS.AI.GENERAL, {
         messages: messages,
-        model: "llama-3.3-70b-versatile",
-        response_format: { type: "json_object" },
+        returnJSON: true,
       });
-      console.log(
-        "Extracted " + info + ": " + completion.choices[0].message.content
-      );
-      return JSON.parse(completion.choices[0].message.content);
+      return completion.data.response;
     } catch (err) {
       console.error(err);
       setError("Error with API's; please try again later");
@@ -315,16 +317,12 @@ export default function Audio({ error, setError }) {
         content: formatTranscriptString([transcript[0]]),
       });
     }
-    console.log(messages[0].content, messages[1]?.content);
     try {
-      const response = await groq.chat.completions.create({
+      const response = await axios.post(API_ENDPOINTS.AI.GENERAL, {
         messages: messages,
-        model: "llama-3.3-70b-versatile",
-        response_format: { type: "json_object" },
+        returnJSON: true,
       });
-      return JSON.parse(response.choices[0].message.content)[
-        "conversationNotes"
-      ];
+      return response.data.response.conversationNotes;
     } catch (err) {
       console.error(err);
       setError("Error with API's; please try again later");
@@ -350,7 +348,7 @@ export default function Audio({ error, setError }) {
       const topic = requestedTopicResponse["requestedTopic"];
       await transcribeText("What do you know about " + topic + "?");
       let newTranscript = [
-        { tutor: "Hi, how can I help you today", student: transcribedText },
+        { tutor: "Hi, how can I help you today?", student: transcribedText },
         { tutor: "What do you know about " + topic + "?" },
       ];
       await updateSession({
@@ -371,7 +369,7 @@ export default function Audio({ error, setError }) {
       } else if (levelOfUnderstanding == "changeTopic") {
         let newTopicTranscript = [];
         newTopicTranscript.push({
-          tutor: "Hi, how can I help you today",
+          tutor: "Hi, how can I help you today?",
           student: transcribedText,
         });
         newTopicTranscript.push({
@@ -456,13 +454,10 @@ export default function Audio({ error, setError }) {
         role: "user",
         content: inputTranscript[inputTranscript.length - 1]["student"],
       });
-      console.log("messages: " + JSON.stringify(messages));
-      const response = await groq.chat.completions.create({
+      const response = await axios.post(API_ENDPOINTS.AI.GENERAL, {
         messages: messages,
-        model: "llama-3.3-70b-versatile",
       });
-      console.log("tutor said: " + response.choices[0].message.content);
-      return response.choices[0].message.content;
+      return response.data.response;
     } catch (err) {
       console.error(err);
       setError("Error with API's; please try again later");
@@ -477,7 +472,6 @@ export default function Audio({ error, setError }) {
         transcribedText
       );
       if (currLevel == "invalidInput") {
-        console.log("Invalid input, need to try again");
         await transcribeText("Sorry can you repeat that?");
         setValidInput(false);
         return;
@@ -496,7 +490,6 @@ export default function Audio({ error, setError }) {
       if (inputTranscript.length >= 5) {
         summary = await summarizeTranscript(newInputTranscript, notes != "");
         newInputTranscript.shift();
-        console.log("summary: " + summary);
       }
       const diffLevel = currLevel != level;
       const response = await askTutor(
@@ -580,13 +573,10 @@ export default function Audio({ error, setError }) {
         role: "user",
         content: inputTranscript[inputTranscript.length - 1]["student"],
       });
-      console.log("messages: " + JSON.stringify(messages));
-      const response = await groq.chat.completions.create({
+      const response = await axios.post(API_ENDPOINTS.AI.GENERAL, {
         messages: messages,
-        model: "llama-3.3-70b-versatile",
       });
-      console.log("tutor said: " + response.choices[0].message.content);
-      return response.choices[0].message.content;
+      return response.data.response;
     } catch (err) {
       console.error(err);
       setError("Error with API's; please try again later");
@@ -601,7 +591,6 @@ export default function Audio({ error, setError }) {
         transcribedText
       );
       if (currLevel == "invalidInput") {
-        console.log("Invalid input, need to try again");
         await transcribeText("Sorry can you repeat that?");
         setValidInput(false);
         return;
@@ -620,7 +609,6 @@ export default function Audio({ error, setError }) {
       if (inputTranscript.length >= 5) {
         summary = await summarizeTranscript(newInputTranscript, notes != "");
         newInputTranscript.shift();
-        console.log("summary: " + summary);
       }
       const diffLevel = currLevel != level;
       const response = await askTutorPracticeMode();
@@ -657,7 +645,6 @@ export default function Audio({ error, setError }) {
       stopRecording();
     }
     recordSwitchDisable("off");
-
     switch (stage) {
       case "Setup":
         await setup();
@@ -670,6 +657,8 @@ export default function Audio({ error, setError }) {
         break;
     }
     recordSwitchDisable("on");
+    setAudioBlob(null);
+    setAudioURL(null);
   }
 
   return (
@@ -682,11 +671,14 @@ export default function Audio({ error, setError }) {
         >
           {recording ? "Stop" : "Start"}
         </button>
-        {audioBlob && (
-          <button onClick={main} ref={sendAudioRef} className="sendAudioButton">
-            Tutor Me!
-          </button>
-        )}
+        <button
+          onClick={main}
+          ref={sendAudioRef}
+          className="sendAudioButton"
+          disabled={!audioBlob}
+        >
+          Tutor Me!
+        </button>
         <audio ref={audioPlayerRef} hidden={!audioURL} />
       </div>
     </>

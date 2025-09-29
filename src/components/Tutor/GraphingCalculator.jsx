@@ -1,17 +1,16 @@
 import { useEffect, useRef, useContext, useState } from "react";
 import { SharedContext } from "../../contexts/SharedContext";
 import "../../App.css";
-import Groq from "groq-sdk";
 import {
   Expression,
   GraphingCalculator,
   useHelperExpression,
   ScientificCalculator,
 } from "desmos-react";
+import axios from "axios";
+import { API_ENDPOINTS } from "../../config/api";
 
 export default function GraphingCalculatorComponent() {
-  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-  const groq = new Groq({ apiKey: groqApiKey, dangerouslyAllowBrowser: true });
   const {
     inputTranscript,
     stage,
@@ -59,21 +58,20 @@ export default function GraphingCalculatorComponent() {
     }
     try {
       let newGraphingEquations = [];
-      const response = await groq.chat.completions.create({
-        messages: [
-          {
-            role: "system",
-            content: `You are a helpful math tutor's assistant. The tutor is teaching the student about the ${topic}. Your job is to help the tutor teach the student by providing 2D graphs that are relevant to what the tutor last said to enhance the student's learning. You will provide these graphs by providing the math equations to be graphed; note that since these equations will be graphed in a standard graphing calculator, you should only ever use ‘x’ and ‘y’ for variables. The following text is the most recent conversation between the tutor and the student. Review this and return all math equations, that are relevant to what the tutor last said, to be graphed out to enhance the student’s learning. Also when considering returning graphs, consider the context of what the tutor's saying; for example if the tutor is giving the student a practice problem, don't provide graphs that would give away the solution. Return your response as a json object with the following schema: {graphs: [graphingEquationsSet_1, graphingEquationsSet_2,…]} where graphingEquationsSet_i is the i_th set of graphing equations to be displayed at a given time. What I mean is is that since a graph can include multiple functions, the set of graphing equations is the set of functions to be graphed together on one screen to form a single graph to be displayed to the user. You can include multiple graphs. A last note on syntax: your math equations should use latex syntax, and since your equations are first returned as a string and the backslash is a special character, use two backslashes each time you use the backslash. Additionally, each set of graphing equations should always be an array, even if the array contains zero or one element, but you can supply as many sets of graphing equations as you deem appropriate.`,
-          },
-          {
-            role: "user",
-            content: formatTranscriptString(inputTranscript.slice(0, 3)),
-          },
-        ],
-        model: "llama-3.3-70b-versatile",
-        response_format: { type: "json_object" },
-      });
-      const responseJSON = JSON.parse(response.choices[0].message.content);
+      const messages = [
+        {
+          role: "system",
+          content: `You are a helpful math tutor's assistant. The tutor is teaching the student about the ${topic}. Your job is to help the tutor teach the student by providing 2D graphs that are relevant to what the tutor last said to enhance the student's learning. You will provide these graphs by providing the math equations to be graphed; note that since these equations will be graphed in a standard graphing calculator, you should only ever use ‘x’ and ‘y’ for variables. The following text is the most recent conversation between the tutor and the student. Review this and return all math equations, that are relevant to what the tutor last said, to be graphed out to enhance the student’s learning. Also when considering returning graphs, consider the context of what the tutor's saying; for example if the tutor is giving the student a practice problem, don't provide graphs that would give away the solution. Return your response as a json object with the following schema: {graphs: [graphingEquationsSet_1, graphingEquationsSet_2,…]} where graphingEquationsSet_i is the i_th set of graphing equations to be displayed at a given time. What I mean is is that since a graph can include multiple functions, the set of graphing equations is the set of functions to be graphed together on one screen to form a single graph to be displayed to the user. You can include multiple graphs. A last note on syntax: your math equations should use latex syntax, and since your equations are first returned as a string and the backslash is a special character, use two backslashes each time you use the backslash. Additionally, each set of graphing equations should always be an array, even if the array contains zero or one element, but you can supply as many sets of graphing equations as you deem appropriate.`,
+        },
+        {
+          role: "user",
+          content: formatTranscriptString(inputTranscript.slice(0, 3)),
+        },
+      ];
+
+      const input = { messages: messages, returnJSON: true };
+      const response = await axios.post(API_ENDPOINTS.AI.GENERAL, input);
+      const responseJSON = response.data.response;
       newGraphingEquations = responseJSON["graphs"];
       console.log(newGraphingEquations);
       await updateSession({

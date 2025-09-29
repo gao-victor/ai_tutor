@@ -18,8 +18,8 @@ export default function Transcript() {
           {transcript &&
             transcript.map((transcript) => (
               <>
-              <p className="transcriptText">{transcript.tutor}</p>
-                <li className="transcriptText">{transcript.student}</li>
+              <p className="transcriptText">Tutor: {transcript.tutor}</p>
+                <p className="transcriptText">Student: {transcript.student}</p>
               </>
             ))}
         </ul>

@@ -39,10 +39,7 @@ button:disabled{
   display: flex;
   justify-content: center; /* center the buttons horizontally */
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #ddd;
+  gap: 6px;
 }
 
 /* 
@@ -60,56 +57,72 @@ button:disabled{
   background-color: #43bc47; /* green when idle */
   cursor: pointer;
   color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
   /* If Audio.jpg is in public/, use url("/Audio.jpg") */
   background-repeat: no-repeat;
   background-position: center;
   background-size: 30px 30px;
   /* Subtle green glow */
   box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Turn button red + red glow when recording */
 .recordAudioButton.recording {
   background-color: #f44336; /* red */
-  box-shadow: 0 0 10px rgba(244, 67, 54, 0.6);
+  box-shadow: 0 0 15px rgba(244, 67, 54, 0.7);
+  transform: scale(1.05);
 }
 
 .recordAudioButton:hover{
   background-color: #3b7e3d;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.6);
 }
 
 .recordAudioButton.recording:hover{
   background-color: #cf4137;
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 5px 20px rgba(244, 67, 54, 0.8);
 }
 /* 
   "Tutor me!" (send audio) button 
   - Slightly larger than standard text, with consistent styling
 */
 .sendAudioButton {
-  padding: 10px 18px;
-  font-size: 0.95rem;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  background-color: #1976d2;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
   border: none;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .sendAudioButton:hover {
-  background-color: #145ca4;
+  background: linear-gradient(135deg, #5a67d8, #6b46c1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
 /* --- MATH EQUATIONS SECTION (chalkboard) --- */
 .equationsSection {
-  /* Keep some vertical height, but you can tweak as needed */
-  height: 400px; 
+  /* Make it fit within the container */
+  height: 100%;
+  max-height: 470px; /* Leave room for the header */
   background-color: #324d2a; /* dark green chalkboard color */
   color: #ffffff;
   border: 10px solid #8b5a2b; /* wood-like border */
   overflow-y: auto; /* scrollable for many equations */
   padding: 20px;
+  box-sizing: border-box;
   /* If you want a chalkboard style font, import it or use your own. 
      For example, in addition to Open Sans, you could do: 
      @import url('https://fonts.googleapis.com/css2?family=Schoolbell&display=swap'); 
@@ -129,13 +142,14 @@ button:disabled{
 
 /* --- GRAPHING CALCULATOR SECTION --- */
 .calculator {
-  /* Provide a set height or allow it to expand. 
-     We can keep some margin or padding for spacing. */
-  margin: 20px;
+  /* Make it fill the available space */
+  width: 100%;
+  height: 100%;
+  max-height: 470px; /* Leave room for the header */
   border: 1px solid #ccc;
   background-color: #fff;
-  height: 25vh; /* example height, adjust as needed */
   position: relative;
+  box-sizing: border-box;
 }
 
 .calculator .dcg-container {
@@ -149,15 +163,15 @@ button:disabled{
   margin-right: 8px;
   font-size: 0.9rem;
   cursor: pointer;
-  background-color: #1976d2;
+  background: linear-gradient(135deg, #667eea, #f6f2fb63);
   color: #fff;
-  border: none;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  border: 3px solid #a2a2a2;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .graphControlButton:hover {
-  background-color: #145ca4;
+  background: linear-gradient(135deg, #667eea83, #f6f2fb63);
 }
 
 /* --- TRANSCRIPT SECTION --- */
@@ -169,9 +183,7 @@ button:disabled{
   min-height: 150px;
   max-height: 250px; /* if you want a fixed max height */
   overflow-y: auto;
-  background-color: #f9f9f9;
   border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
   padding: 10px 20px;
   box-sizing: border-box;
 }
@@ -184,6 +196,8 @@ button:disabled{
 .transcriptText {
   margin-bottom: 8px;
   line-height: 1.4;
+  color: white;
+  font-size: 1.2rem;
 }
 
 /* Example error styling */
@@ -571,8 +585,9 @@ button:disabled{
 }
 
 .session-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, #667eea, #f6f2fb63);
   border-radius: 20px;
+  
   padding: 30px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
@@ -586,7 +601,7 @@ button:disabled{
 .session-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 1);
+  background: linear-gradient(135deg, #788dea, #f6f2fb97);
 }
 
 .session-info {
@@ -603,17 +618,18 @@ button:disabled{
 .session-header h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: #ffffff;
   margin: 0;
 }
 
 .session-badge {
-  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   padding: 6px 16px;
-  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
   font-size: 0.9rem;
   font-weight: 500;
+  background: linear-gradient(135deg,#667eea, #ffffff72);
 }
 
 .session-details {
@@ -629,13 +645,13 @@ button:disabled{
 }
 
 .detail-label {
-  color: #718096;
+  color: #ffffff;
   font-weight: 500;
   min-width: 100px;
 }
 
 .detail-value {
-  color: #4a5568;
+  color: #ffffff;
   font-weight: 400;
 }
 
@@ -857,5 +873,247 @@ button:disabled{
   
   .empty-state h3 {
     font-size: 1.5rem;
+  }
+}
+
+/* --- MAIN APP STYLING (matching welcome page design) --- */
+.main-app-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  background: linear-gradient(105deg,#667eea, #764ba2);
+  border-radius: 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.353);
+}
+
+.main-app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 40px;
+  background: linear-gradient(135deg, transparent, #667eea 40%, #764ba2);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.main-app-header .header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.main-app-header .header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+}
+
+.main-app-header .session-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.main-app-header .session-stage {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+  color: rgb(255, 255, 255);
+}
+
+.session-stage{
+  border-radius: 15px;
+  border: 3px solid rgba(255, 255, 255, 0.353);
+  margin: 0 auto;
+  padding: 6px 16px;
+  background: linear-gradient(135deg,#667eea, #ffffff90);
+}
+
+.main-app-header .back-button {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.main-app-header .back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.main-app-header .logout-button {
+  padding: 10px 20px;
+  background: rgba(220, 53, 69, 0.8);
+  color: white;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.main-app-header .logout-button:hover {
+  background: rgba(220, 53, 69, 1);
+  transform: translateY(-2px);
+}
+
+.tutor-components {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+
+.audio-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  backdrop-filter: blur(10px);
+}
+
+.math-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.math-section,
+.calculator-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 550px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+}
+
+.math-section:hover,
+.calculator-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.transcript-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 200px;
+  backdrop-filter: blur(10px);
+}
+
+.transcript-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.component-section h3 {
+  font-size: 1.3rem;
+  color: white;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.math-section h3::before {
+  content: "✏️";
+}
+
+.calculator-section h3::before {
+  content: "📊";
+}
+
+.transcript-section h3::before {
+  content: "💬";
+}
+
+/* Responsive design for MainApp */
+@media (max-width: 1200px) {
+  .main-app-content {
+    max-width: 95%;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    padding: 25px 20px;
+  }
+  
+  .main-app-header h1 {
+    font-size: 2rem;
+    text-align: center;
+  }
+  
+  .main-app-header .header-left,
+  .main-app-header .header-right {
+    align-items: center;
+  }
+  
+  .main-app-header .session-info {
+    align-items: center;
+  }
+  
+  .tutor-components {
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .math-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .math-section,
+  .calculator-section {
+    height: 450px;
+    padding: 15px;
+  }
+  
+  .audio-section {
+    padding: 15px;
+    min-height: 70px;
+  }
+  
+  .transcript-section {
+    padding: 20px;
   }
 }

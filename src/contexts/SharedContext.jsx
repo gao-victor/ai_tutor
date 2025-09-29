@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/api";
 
 export const SharedContext = createContext();
 
@@ -85,7 +86,7 @@ export function SharedProvider({ children, sessionId }) {
         "validInput",
       ];
       const response = await axios.patch(
-        `http://localhost:5001/api/sessions/${sessionId}`,
+        API_ENDPOINTS.SESSIONS.GET(sessionId),
         updates
       );
       for (const key of Object.keys(response.data)) {
@@ -126,7 +127,7 @@ export function SharedProvider({ children, sessionId }) {
         validInput,
         setValidInput,
         error,
-        setError
+        setError,
       }}
     >
       {children}
