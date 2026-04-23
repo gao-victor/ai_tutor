@@ -49,6 +49,17 @@ const Welcome = () => {
             Create Account
           </Link>
         </div>
+
+        <div className="learn-more-section">
+          <h3>Want to know more?</h3>
+          <p>
+            Discover how our AI tutor works and see the learning process in
+            action.
+          </p>
+          <Link to="/learn-more" className="btn btn-outline">
+            How does it work? →
+          </Link>
+        </div>
       </div>
     </div>
   );

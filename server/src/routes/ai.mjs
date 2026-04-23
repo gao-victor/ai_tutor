@@ -112,7 +112,7 @@ router.post('/general', async (req, res) => {
         error: 'Messages array is required' 
       });
     }
-    const input = {messages: messages, model: "llama-3.3-70b-versatile"};
+    const input = {messages: messages, model: "meta-llama/llama-4-scout-17b-16e-instruct"};
     if (returnJSON) {
       input.response_format = {type: "json_object"};
     }

@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Welcome from "./components/Welcome";
+import LearnMore from "./components/LearnMore";
 import MainApp from "./components/MainApp";
 import SessionList from "./components/Sessions/SessionList";
 import SessionWrapper from "./components/SessionWrapper";
@@ -31,6 +32,7 @@ const App = () => {
         <div className="app">
           <Routes>
             <Route path="/welcome" element={<Welcome />} />
+            <Route path="/learn-more" element={<LearnMore />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route

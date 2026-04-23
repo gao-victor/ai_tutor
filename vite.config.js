@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: '', // Empty string for relative paths
   build: {
-    outDir: 'dist',
+    outDir: 'server/public',
     emptyOutDir: true,
     rollupOptions: {
       output: {

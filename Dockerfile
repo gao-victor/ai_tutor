@@ -55,7 +55,7 @@ COPY --from=server-builder /app/src ./src
 COPY --from=server-builder /app/package*.json ./
 
 # Copy built frontend files from frontend-builder stage
-COPY --from=frontend-builder /app/dist ./public
+COPY --from=frontend-builder /app/server/public ./public
 
 # Change ownership to nodejs user
 RUN chown -R nodejs:nodejs /app

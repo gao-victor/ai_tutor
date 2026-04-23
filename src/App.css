@@ -1062,6 +1062,252 @@ button:disabled{
   content: "💬";
 }
 
+/* --- LEARN MORE PAGE STYLING --- */
+.learn-more-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.learn-more-content {
+  max-width: 1000px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.learn-more-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.learn-more-subtitle {
+  font-size: 1.3rem;
+  color: #4a5568;
+  margin-bottom: 50px;
+  line-height: 1.6;
+}
+
+.app-synopsis {
+  background: #f7fafc;
+  border-radius: 15px;
+  padding: 40px;
+  margin-bottom: 60px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.app-synopsis h2 {
+  font-size: 2.2rem;
+  color: #2d3748;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.app-synopsis p {
+  font-size: 1.1rem;
+  color: #4a5568;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.process-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  margin-bottom: 60px;
+}
+
+.process-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.step-image {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.placeholder-image {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.placeholder-image img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 15px;
+}
+
+.placeholder-image:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(102, 126, 234, 0.4);
+}
+
+.image-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.placeholder-image p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.step-content {
+  max-width: 800px;
+}
+
+.step-content h3 {
+  font-size: 2rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.step-content p {
+  font-size: 1.1rem;
+  color: #4a5568;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.learn-more-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 15px 30px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Learn more section in welcome page */
+.learn-more-section {
+  margin-top: 50px;
+  padding: 30px;
+  background: #f7fafc;
+  border-radius: 15px;
+  border: 1px solid #e2e8f0;
+}
+
+.learn-more-section h3 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.learn-more-section p {
+  color: #4a5568;
+  margin-bottom: 25px;
+  font-size: 1.1rem;
+}
+
+/* Responsive design for Learn More page */
+@media (max-width: 768px) {
+  .learn-more-content {
+    padding: 40px 20px;
+  }
+  
+  .learn-more-title {
+    font-size: 2.5rem;
+  }
+  
+  .learn-more-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .app-synopsis {
+    padding: 30px 20px;
+  }
+  
+  .app-synopsis h2 {
+    font-size: 1.8rem;
+  }
+  
+  .process-flow {
+    gap: 40px;
+  }
+  
+  .placeholder-image {
+    padding: 15px;
+  }
+  
+  .placeholder-image img {
+    max-height: 250px;
+  }
+  
+  .image-icon {
+    font-size: 3rem;
+  }
+  
+  .placeholder-image p {
+    font-size: 1.2rem;
+  }
+  
+  .step-content h3 {
+    font-size: 1.6rem;
+  }
+  
+  .learn-more-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn-outline {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .learn-more-section {
+    padding: 25px 20px;
+  }
+}
+
 /* Responsive design for MainApp */
 @media (max-width: 1200px) {
   .main-app-content {
